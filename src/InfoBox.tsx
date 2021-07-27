@@ -16,7 +16,7 @@ const InfoBox = ({ title, cases, total }: InfoBoxProps) => {
         </Typography>
         <h2 className="infoBox__cases">{cases}</h2>
         <Typography className="infoBox__total" color="textSecondary">
-          {total}
+          {total} Total
         </Typography>
       </CardContent>
     </Card>
