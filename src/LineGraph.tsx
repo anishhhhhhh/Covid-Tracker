@@ -20,51 +20,80 @@ const options = {
       },
     },
   },
+  scales: {
+    xAxes: [
+      {
+        type: "time",
+        time: {
+          format: "MM/DD/YY",
+          tooltipFormat: "ll",
+        },
+      },
+    ],
+    yAxes: [
+      {
+        gridLines: {
+          display: false,
+        },
+        ticks: {
+          // Include a dollar sign in the ticks
+          callback: function (value: number, index: any, values: number) {
+            return numeral(value).format("0a");
+          },
+        },
+      },
+    ],
+  },
 };
 
-const LineGraph = () => {
-  const [data, setData] = useState({});
-
-  const buildChartData = (data: any, casesType = "cases") => {
-    const chartData: any = [];
-    let lastDataPoint: any;
-    for (let date in data.cases) {
-      if (lastDataPoint) {
-        const newDataPoint = {
-          x: date,
-          y: data[casesType][date] - lastDataPoint,
-        };
-        chartData.push(newDataPoint);
-      }
-      lastDataPoint = data["cases"][date];
+const buildChartData = (data: any, casesType = "cases") => {
+  const chartData: any = [];
+  let lastDataPoint: any;
+  for (let date in data.cases) {
+    if (lastDataPoint) {
+      const newDataPoint = {
+        x: date,
+        y: data[casesType][date] - lastDataPoint,
+      };
+      chartData.push(newDataPoint);
     }
-    return chartData;
-  };
+    lastDataPoint = data["cases"][date];
+  }
+  return chartData;
+};
+
+const LineGraph = ({ casesType = "cases" }) => {
+  const [data, setData] = useState<any>([]);
 
   useEffect(() => {
-    fetch("https://disease.sh/v3/covid-19/historical/all?lastdays=120")
-      .then((response) => response.json())
-      .then((data) => {
-        // console.log(data);
-        const chartData = buildChartData(data);
-        setData(chartData);
-      });
+    const fetchData = async () => {
+      await fetch("https://disease.sh/v3/covid-19/historical/all?lastdays=120")
+        .then((response) => response.json())
+        .then((data) => {
+          // console.log(data);
+          const chartData = buildChartData(data);
+          setData(chartData);
+        });
+    };
+    fetchData();
   }, []);
 
   return (
     <div>
-      <Line
-        options={options}
-        data={{
-          datasets: [
-            {
-              backgroundColor: "rgba(204, 16, 52 ,0.5)",
-              borderColor: "#CC1034",
-              data: data,
-            },
-          ],
-        }}
-      />
+      {data?.length > 0 && (
+        <Line
+          options={options}
+          data={{
+            datasets: [
+              {
+                backgroundColor: "rgba(204, 16, 52 ,0.5)",
+                borderColor: "#CC1034",
+                data: data,
+              },
+            ],
+          }}
+        />
+      )}
     </div>
   );
 };
